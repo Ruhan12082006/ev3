@@ -8,7 +8,6 @@ import lejos.hardware.lcd.LCD;
 import lejos.hardware.Button;
 import lejos.robotics.SampleProvider;   // allows the sensor to return the samples or data
                                         // e.g., for getting distance data from sonic sensor etc
-
 public class UltraS {
 
     public static void main(String[] args) {
