@@ -12,8 +12,8 @@ public class LightS
 {
     public static void main(String[] args)
     {
-        EV3ColorSensor colorSensor  = new EV3ColorSensor(SensorPort.S4);
-        SampleProvider light        = colorSensor.getAmbientMode();
+        EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S4);
+        SampleProvider light = colorSensor.getAmbientMode();
         
         // Create an array to hold the sensor data
         float[] sample = new float[light.sampleSize()];
