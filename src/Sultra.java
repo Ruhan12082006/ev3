@@ -9,7 +9,7 @@ import lejos.hardware.Button;
 import lejos.robotics.SampleProvider;   // allows the sensor to return the samples or data
                                         // e.g., for getting distance data from sonic sensor etc
 
-public class UltraS {
+public class Sultra {
 
     public static void main(String[] args) {
         // Creating an instance of US sensor at port 2
@@ -29,9 +29,10 @@ public class UltraS {
             Motor.A.forward();
             Motor.B.forward();
             Delay.msDelay(1000);
-    
+
+            boolean BroStop = false; 
         // Keep displaying the distance, until user presses a button
-        while (!Button.ESCAPE.isDown())
+        while (!Button.ESCAPE.isDown() && BroStop == false)
         {
             
             // Get the curRent distnce reading from the US sensor
@@ -54,7 +55,7 @@ public class UltraS {
             // }
 
             //try-2
-            if (sample[0] < 0.5 && sample[0] > 0.3)
+            if (sample[0] < 0.3 && sample[0] > 0.1)
             {
                 Motor.A.setSpeed(100);
                 Motor.B.setSpeed(100);
@@ -62,10 +63,26 @@ public class UltraS {
                 Motor.B.forward();
             }
 
-            if (sample[0] <= 0.3)
+            if (sample[0] <= 0.1)
             {
                 Motor.A.stop(true);  
-                Motor.B.stop(true);
+                Motor.B.stop(false);
+
+                LCD.drawString("Returning", 0, 2);
+
+                Motor.A.setSpeed(360);
+                Motor.B.setSpeed(360);
+                Motor.A.rotate(360, true);
+                Motor.B.rotate(-360, false);
+
+                Motor.A.forward();
+                Motor.B.forward();
+                Delay.msDelay(3000);
+
+                Motor.A.stop(true);
+                Motor.B.stop(false);
+
+                BroStop = true;
             }
             // Refresh display every 100 ms
             try {
@@ -78,6 +95,7 @@ public class UltraS {
         
         // Close US sensor
         ultrasonicSensor.close();
+        LCD.drawString("I am Back..!!", 0, 4);
         Button.waitForAnyPress();
     }
 }
