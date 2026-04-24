@@ -1,1 +1,2 @@
-"C:\Program Files\Java\jdk1.7.0_80\bin\javac" -classpath "lib\ev3classes.jar" src\test3.java
+"C:\Program Files\Java\jdk1.7.0_80\bin\javac" -classpath "lib\ev3classes.jar" src\testbro3.java
+

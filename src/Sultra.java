@@ -8,8 +8,12 @@ import lejos.hardware.lcd.LCD;
 import lejos.hardware.Button;
 import lejos.robotics.SampleProvider;   // allows the sensor to return the samples or data
                                         // e.g., for getting distance data from sonic sensor etc
+<<<<<<< HEAD:src/Sultra.java
 
 public class Sultra {
+=======
+public class UltraS {
+>>>>>>> 16e1a25d1b73b5b343aee325631a8c0e776ca2db:src/UltraS.java
 
     public static void main(String[] args) {
         // Creating an instance of US sensor at port 2

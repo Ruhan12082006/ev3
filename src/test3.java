@@ -11,13 +11,13 @@ import lejos.utility.Delay;
 
 public class test3 {
     
-
+    
     public static float currentIntensity = 0;
     public static float currentDistance = 100; 
 
     public static void main(String[] args) {
         
-       
+        
         Thread sensorWorker = new Thread(new SensorScanner());
         sensorWorker.setDaemon(true); 
         sensorWorker.start();
@@ -28,12 +28,12 @@ public class test3 {
 
         while (!Button.ESCAPE.isDown()) {
             
-          
+           
             if (currentDistance < 0.15) {
                 stopAndScan();
             } 
             else {
-              
+                
                 if (currentIntensity < 0.4) {
                     Motor.A.setSpeed(200);
                     Motor.B.setSpeed(200);
@@ -48,32 +48,32 @@ public class test3 {
         }
     }
 
-   
+    // The Scanning Feature
     public static void stopAndScan() {
         Motor.A.stop(true);
         Motor.B.stop(false);
         LCD.clear();
         LCD.drawString("Object! Scanning", 0, 0);
 
-      
-        Motor.A.rotate(-150, true);
-        Motor.B.rotate(150, false);
+        // Turn Left
+        Motor.A.rotate(-70, true);
+        Motor.B.rotate(70, false);
         Delay.msDelay(500);
 
         if (currentDistance > 0.30) {
             LCD.drawString("Good to go (L)", 0, 2);
             Delay.msDelay(1000);
         } else {
-           
-            Motor.A.rotate(300, true);
-            Motor.B.rotate(-300, false);
+            
+            Motor.A.rotate(140, true);
+            Motor.B.rotate(-140, false);
             Delay.msDelay(500);
 
             if (currentDistance > 0.30) {
                 LCD.drawString("Good to go (R)", 0, 2);
                 Delay.msDelay(1000);
             } else {
-              
+             
                 Motor.A.rotate(-150, true);
                 Motor.B.rotate(150, false);
                 LCD.drawString("Blocked", 0, 2);
@@ -86,19 +86,19 @@ public class test3 {
 class SensorScanner implements Runnable {
     public void run() {
         EV3ColorSensor color = new EV3ColorSensor(SensorPort.S3);
-        SampleProvider lightProc = color.getRedMode();
-        float[] cSample = new float[lightProc.sampleSize()];
-        
         EV3UltrasonicSensor ultra = new EV3UltrasonicSensor(SensorPort.S2);
+        
+        SampleProvider lightProc = color.getRedMode();
         SampleProvider distProc = ultra.getDistanceMode();
+        
+        float[] cSample = new float[lightProc.sampleSize()];
         float[] uSample = new float[distProc.sampleSize()];
-        
-        
+
         while (true) {
             lightProc.fetchSample(cSample, 0);
             distProc.fetchSample(uSample, 0);
 
-           
+            
             test3.currentIntensity = cSample[0];
             test3.currentDistance = uSample[0];
 
