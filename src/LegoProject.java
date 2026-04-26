@@ -1,5 +1,17 @@
 package src;
 
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.lcd.LCD;
+import lejos.hardware.motor.Motor;
+import lejos.hardware.Button;
+import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.port.MotorPort;
+import lejos.robotics.RegulatedMotor;
+
 public class LegoProject {
 
     static volatile boolean obstacleDetected = false;
@@ -46,3 +58,199 @@ public class LegoProject {
         Motor.A.stop(true);
         Motor.B.stop(true);
     }
+
+    //     Subhanjan's responsibilities:
+    //   - Progressive left/right ultrasonic scanning
+    //   - Direction decision logic (leftscan vs rightscan)
+    //   - Full obstacle bypass sequence (turn, pass, realign)
+
+    static void detectAndAvoid(SampleProvider light, float blackThreshold) {
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        LCD.clear();
+        LCD.drawString("Blocked fr", 0, 0);
+        Delay.msDelay(300);
+
+        // STEP 1: Scan LEFT progressively
+        LCD.drawString("Scanning LEFT...", 0, 1);
+        Motor.A.resetTachoCount();
+        Motor.B.resetTachoCount();
+        int leftscan = 0;
+        int maxscan = 400;
+
+        while (leftscan < maxscan) {
+            float progress = (float) leftscan / maxscan;
+            int speed = (int)(50 + 100 * progress);
+            speed = Math.min(speed, 150);
+            Motor.A.setSpeed(speed);
+            Motor.B.setSpeed(speed);
+            Motor.A.backward();
+            Motor.B.forward();
+            leftscan = Math.abs(Motor.B.getTachoCount());
+            if (currentDistance >= 0.30f) break;
+            Delay.msDelay(20);
+        }
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        Delay.msDelay(200);
+        LCD.drawString("Left Scan: " + leftscan + "  ", 0, 1);
+
+        // STEP 2: Return to center
+        Motor.A.resetTachoCount();
+        Motor.B.resetTachoCount();
+        int returned = 0;
+        while (returned < leftscan) {
+            Motor.A.setSpeed(150);
+            Motor.B.setSpeed(150);
+            Motor.A.forward();
+            Motor.B.backward();
+            returned = Math.abs(Motor.B.getTachoCount());
+            Delay.msDelay(20);
+        }
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        Delay.msDelay(300);
+
+        // STEP 3: Scan RIGHT progressively
+        LCD.drawString("Scanning RIGHT..", 0, 1);
+        Motor.A.resetTachoCount();
+        Motor.B.resetTachoCount();
+        int rightscan = 0;
+
+        while (rightscan < maxscan) {
+            float progress = (float) rightscan / maxscan;
+            int speed = (int)(50 + 100 * progress);
+            speed = Math.min(speed, 150);
+            Motor.A.setSpeed(speed);
+            Motor.B.setSpeed(speed);
+            Motor.A.forward();
+            Motor.B.backward();
+            rightscan = Math.abs(Motor.B.getTachoCount());
+            if (currentDistance >= 0.30f) break;
+            Delay.msDelay(20);
+        }
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        Delay.msDelay(200);
+        LCD.drawString("Right Scan " + rightscan + "  ", 0, 2);
+
+        // STEP 4: Return to center
+        Motor.A.resetTachoCount();
+        Motor.B.resetTachoCount();
+        returned = 0;
+        while (returned < rightscan) {
+            Motor.A.setSpeed(150);
+            Motor.B.setSpeed(150);
+            Motor.A.backward();
+            Motor.B.forward();
+            returned = Math.abs(Motor.B.getTachoCount());
+            Delay.msDelay(20);
+        }
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        Delay.msDelay(300);
+
+        // STEP 5: Compare and choose side with more space
+        boolean goRight = (leftscan >= rightscan);
+        LCD.clear();
+        LCD.drawString("L:" + leftscan + " R:" + rightscan, 0, 0);
+        LCD.drawString("Go: " + (goRight ? "RIGHT" : "LEFT"), 0, 1);
+        Delay.msDelay(800);
+
+        // STEP 6: Turn 90 degrees in chosen direction
+        Motor.A.setSpeed(180);
+        Motor.B.setSpeed(180);
+        if (goRight) {
+            Motor.A.rotate(180, true);
+            Motor.B.rotate(-180, false);
+        } else {
+            Motor.A.rotate(-180, true);
+            Motor.B.rotate(180, false);
+        }
+        Delay.msDelay(300);
+
+        // STEP 7: Drive forward to clear obstacle
+        LCD.clear();
+        LCD.drawString("Passing obj...", 0, 0);
+        Motor.A.setSpeed(150);
+        Motor.B.setSpeed(150);
+        Motor.A.forward();
+        Motor.B.forward();
+        Delay.msDelay(3500);
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+
+        // STEP 8: Turn 90 degrees back toward line
+        Motor.A.setSpeed(180);
+        Motor.B.setSpeed(180);
+        if (goRight) {
+            Motor.A.rotate(-180, true);
+            Motor.B.rotate(180, false);
+        } else {
+            Motor.A.rotate(180, true);
+            Motor.B.rotate(-180, false);
+        }
+        Delay.msDelay(300);
+
+        // STEP 9: Drive forward past obstacle width
+        Motor.A.setSpeed(150);
+        Motor.B.setSpeed(150);
+        Motor.A.forward();
+        Motor.B.forward();
+        Delay.msDelay(7000);
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+
+        // STEP 10: Turn 90 degrees toward line
+        Motor.A.setSpeed(180);
+        Motor.B.setSpeed(180);
+        if (goRight) {
+            Motor.A.rotate(-180, true);
+            Motor.B.rotate(180, false);
+        } else {
+            Motor.A.rotate(180, true);
+            Motor.B.rotate(-180, false);
+        }
+        Delay.msDelay(300);
+
+        // STEP 11: Drive until color sensor finds the black line
+        LCD.clear();
+        LCD.drawString("Finding line...", 0, 0);
+        driveUntilLine(light, blackThreshold);
+        Delay.msDelay(200);
+
+        // STEP 12: Realign with line direction
+        Motor.A.setSpeed(180);
+        Motor.B.setSpeed(180);
+        if (goRight) {
+            Motor.A.rotate(90, true);
+            Motor.B.rotate(-90, false);
+            Motor.A.setSpeed(80);
+            Motor.B.setSpeed(80);
+            Motor.A.forward();
+            Motor.B.forward();
+            Delay.msDelay(700);
+            Motor.A.stop(true);
+            Motor.B.stop(true);
+        } else {
+            Motor.A.rotate(-180, true);
+            Motor.B.rotate(180, false);
+        }
+        Delay.msDelay(300);
+
+        // STEP 13: Small forward nudge to center sensor on line
+        Motor.A.setSpeed(100);
+        Motor.B.setSpeed(100);
+        Motor.A.forward();
+        Motor.B.forward();
+        Delay.msDelay(300);
+        Motor.A.stop(true);
+        Motor.B.stop(true);
+        Delay.msDelay(200);
+
+        LCD.clear();
+        LCD.drawString("Back on track!", 0, 0);
+        Delay.msDelay(500);
+    }
+    // -> Ruhan's responsibilities
+}
