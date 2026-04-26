@@ -1,3 +1,5 @@
+
+
 package src;
 
 import lejos.hardware.sensor.EV3ColorSensor;
@@ -27,6 +29,7 @@ public class LegoProject {
         UltrasonicThread() {
             ultrasonicSensor = new EV3UltrasonicSensor(SensorPort.S2);
         }
+        @Override
         public void run() {
             SampleProvider distance = ultrasonicSensor.getDistanceMode();
             float[] sample = new float[distance.sampleSize()];
