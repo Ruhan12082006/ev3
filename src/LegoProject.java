@@ -1,4 +1,22 @@
-
+/**
+ * JAVADOC for Applied Application Project
+ * 
+ * LEGO EV3 Line Follower and Obstacle Avoider
+ *
+ * <p><b>Main Functions of the Program:</b></p>
+ * <p>This program makes a LEGO EV3 robot follow a black line using a color sensor and PID math 
+ * for smooth driving. While following the line, it watches for obstacles. If something blocks 
+ * the path, the robot stops, looks left and right to see which side has more space, drives 
+ * around the obstacle, and finds the line again to continue.</p>
+ *
+ * <p><b>How the Thread "run" Method Works:</b></p>
+ * <p>The {@code UltrasonicThread} works like a background watcher. Its {@code run} method is an 
+ * endless loop that constantly reads the distance from the ultrasonic sensor. Every 50 milliseconds, 
+ * it checks how far away things are. If an object gets closer than 0.20 meters, it changes 
+ * the {@code obstacleDetected} flag to true. This instantly tells the main program to stop 
+ * following the line and start dodging the object.</p>
+ *
+ */ 
 
 package src;
 
