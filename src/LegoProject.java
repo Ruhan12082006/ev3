@@ -16,6 +16,22 @@
  * the {@code obstacleDetected} flag to true. This instantly tells the main program to stop 
  * following the line and start dodging the object.</p>
  *
+ *  <p><b>Project Roles:</b></p>
+ * <ul>
+ * <li><b>Aurelija:</b> Created the background thread for the ultrasonic sensor (real-time distance checking). 
+ * Calibrated the color sensor to understand black and white. Wrote the method to make the robot 
+ * drive forward until it finds a black line.</li>
+ * <li><b>Subhanjan:</b> Built the obstacle avoidance logic. Programmed the robot to scan left and right, 
+ * decide which direction has more space, and wrote the full sequence to drive around the object 
+ * and return to the line.</li>
+ * <li><b>Ruhan:</b> Wrote the main program loop and tuned the PID math (kp, ki, kd) to follow the 
+ * line smoothly. Controlled the motor speeds and managed the start and stop rules for the program.</li>
+ * </ul>
+ *
+ * <li><b>References:</b> We used the links below to learn how to use certain features in our code, especially the 'Tacho' motor functions.</li>
+ * 
+ * @see <a href="https://stackoverflow.com/questions/8609734/lejos-nxt-how-can-i-detect-a-motor-stall">Stackoverflow</a>
+ * @see <a href="https://lejos.sourceforge.io/ev3/docs/index.html?lejos/robotics/Tachometer.html">LeJOS EV3 Document</a>
  */ 
 
 package src;
