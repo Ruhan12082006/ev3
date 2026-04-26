@@ -96,7 +96,7 @@ public class LegoProject {
         Motor.B.stop(true);
     }
 
-    //     Subhanjan's responsibilities:
+    //      Subhanjan's responsibilities:
     //   - Progressive left/right ultrasonic scanning
     //   - Direction decision logic (leftscan vs rightscan)
     //   - Full obstacle bypass sequence (turn, pass, realign)
@@ -289,5 +289,90 @@ public class LegoProject {
         LCD.drawString("Back on track!", 0, 0);
         Delay.msDelay(500);
     }
-    // -> Ruhan's responsibilities
+    //      Ruhan's responsibilities
+    //   - Implemention of PID controller.
+    //   - Main Execuation of Loop and Logic.
+    //   - Motor Speed Management.
+    public static void main(String[] args) 
+    {
+        EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S3);
+        SampleProvider light = colorSensor.getRedMode();
+        float[] sample = new float[light.sampleSize()];
+
+        // Calibration
+        LCD.clear();
+        LCD.drawString("On BLACK, press", 0, 0);
+        Button.waitForAnyPress();
+        light.fetchSample(sample, 0);
+        float blackThreshold = sample[0] + 0.02f;
+
+        LCD.clear();
+        LCD.drawString("On WHITE, press", 0, 0);
+        Button.waitForAnyPress();
+        light.fetchSample(sample, 0);
+        float whiteThreshold = sample[0] - 0.02f;
+
+        float target = (blackThreshold + whiteThreshold) / 2.0f;
+        LCD.clear();
+        LCD.drawString("Target: " + String.format("%.2f", target), 0, 0);
+        Delay.msDelay(1000);
+
+        float kp = 200.0f;
+        float ki = 0.1f;
+        float kd = 200.0f;
+        int baseSpeed = 150;
+        float previousError = 0.0f;
+        float integral = 0.0f;
+
+        LCD.clear();
+        LCD.drawString("PID + Bypass", 0, 0);
+        LCD.drawString("Press to Start", 0, 1);
+        Button.waitForAnyPress();
+        LCD.clear();
+
+        // Start ultrasonic thread
+        UltrasonicThread ultraThread = new UltrasonicThread();
+        ultraThread.setDaemon(true);
+        ultraThread.start();
+
+        while (!Button.ESCAPE.isDown()) 
+        {
+
+            if (obstacleDetected) 
+            {
+                Motor.A.stop(true);
+                Motor.B.stop(true);
+                Delay.msDelay(300);
+                detectAndAvoid(light, blackThreshold);
+                previousError = 0.0f;
+                integral = 0.0f;
+                continue;
+            }
+
+            light.fetchSample(sample, 0);
+            float intensity = sample[0];
+            float error = intensity - target;
+            integral += error;
+            integral = Math.max(-100.0f, Math.min(100.0f, integral));
+            float derivative = error - previousError;
+            previousError = error;
+            float pidOutput = (kp * error) + (ki * integral) + (kd * derivative);
+            int leftSpeed = (int)(baseSpeed + pidOutput);
+            int rightSpeed = (int)(baseSpeed - pidOutput);
+            leftSpeed = Math.max(0, Math.min(900, leftSpeed));
+            rightSpeed = Math.max(0, Math.min(900, rightSpeed));
+            Motor.A.setSpeed(leftSpeed);
+            Motor.B.setSpeed(rightSpeed);
+            Motor.A.forward();
+            Motor.B.forward();
+            LCD.drawString("I= " + String.format("%.2f", intensity), 0, 0);
+            LCD.drawString("Err= " + String.format("%.2f", error), 0, 1);
+            LCD.drawString("PID= " + String.format("%.1f", pidOutput), 0, 2);
+            Delay.msDelay(10);
+        }
+
+        colorSensor.close();
+        Motor.A.stop();
+        Motor.B.stop();
+    }
 }
