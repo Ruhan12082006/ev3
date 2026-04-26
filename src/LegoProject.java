@@ -58,16 +58,20 @@ public class LegoProject {
     //   - Color sensor calibration (black/white thresholds)
     //   - driveUntilLine (color sensor line detection)
 
-    static class UltrasonicThread extends Thread {
+    static class UltrasonicThread extends Thread 
+    {
         EV3UltrasonicSensor ultrasonicSensor;
-        UltrasonicThread() {
+        UltrasonicThread()
+        {
             ultrasonicSensor = new EV3UltrasonicSensor(SensorPort.S2);
         }
         @Override
-        public void run() {
+        public void run() 
+        {
             SampleProvider distance = ultrasonicSensor.getDistanceMode();
             float[] sample = new float[distance.sampleSize()];
-            while (!Button.ESCAPE.isDown()) {
+            while (!Button.ESCAPE.isDown()) 
+            {
                 distance.fetchSample(sample, 0);
                 currentDistance = sample[0];
                 obstacleDetected = (currentDistance < 0.20f);
@@ -79,11 +83,14 @@ public class LegoProject {
     }
 
     // Color sensor: drive until black line is found
-    static void driveUntilLine(SampleProvider light, float blackThreshold) {
+    static void driveUntilLine(SampleProvider light, float blackThreshold) 
+    {
         float[] sample = new float[light.sampleSize()];
-        while (true) {
+        while (true) 
+        {
             light.fetchSample(sample, 0);
-            if (sample[0] < blackThreshold) {
+            if (sample[0] < blackThreshold) 
+            {
                 break;
             }
             Motor.A.setSpeed(150);
@@ -101,7 +108,8 @@ public class LegoProject {
     //   - Direction decision logic (leftscan vs rightscan)
     //   - Full obstacle bypass sequence (turn, pass, realign)
 
-    static void detectAndAvoid(SampleProvider light, float blackThreshold) {
+    static void detectAndAvoid(SampleProvider light, float blackThreshold) 
+    {
         Motor.A.stop(true);
         Motor.B.stop(true);
         LCD.clear();
@@ -115,7 +123,8 @@ public class LegoProject {
         int leftscan = 0;
         int maxscan = 400;
 
-        while (leftscan < maxscan) {
+        while (leftscan < maxscan) 
+        {
             float progress = (float) leftscan / maxscan;
             int speed = (int)(50 + 100 * progress);
             speed = Math.min(speed, 150);
@@ -127,6 +136,7 @@ public class LegoProject {
             if (currentDistance >= 0.30f) break;
             Delay.msDelay(20);
         }
+
         Motor.A.stop(true);
         Motor.B.stop(true);
         Delay.msDelay(200);
@@ -136,7 +146,8 @@ public class LegoProject {
         Motor.A.resetTachoCount();
         Motor.B.resetTachoCount();
         int returned = 0;
-        while (returned < leftscan) {
+        while (returned < leftscan) 
+        {
             Motor.A.setSpeed(150);
             Motor.B.setSpeed(150);
             Motor.A.forward();
@@ -154,7 +165,8 @@ public class LegoProject {
         Motor.B.resetTachoCount();
         int rightscan = 0;
 
-        while (rightscan < maxscan) {
+        while (rightscan < maxscan) 
+        {
             float progress = (float) rightscan / maxscan;
             int speed = (int)(50 + 100 * progress);
             speed = Math.min(speed, 150);
@@ -175,7 +187,8 @@ public class LegoProject {
         Motor.A.resetTachoCount();
         Motor.B.resetTachoCount();
         returned = 0;
-        while (returned < rightscan) {
+        while (returned < rightscan) 
+        {
             Motor.A.setSpeed(150);
             Motor.B.setSpeed(150);
             Motor.A.backward();
@@ -289,6 +302,7 @@ public class LegoProject {
         LCD.drawString("Back on track!", 0, 0);
         Delay.msDelay(500);
     }
+
     //      Ruhan's responsibilities
     //   - Implemention of PID controller.
     //   - Main Execuation of Loop and Logic.
@@ -337,7 +351,6 @@ public class LegoProject {
 
         while (!Button.ESCAPE.isDown()) 
         {
-
             if (obstacleDetected) 
             {
                 Motor.A.stop(true);
